@@ -2,24 +2,26 @@
 
 (require json try-catch)
 
+(define-logger client)
+
 (display "connecting...")
 
 (define-values (in out) (tcp-connect "localhost" 20174))
 (displayln "connected.")
 
 (try [(for ([sql '("select * from test" "select data from test where data like 'bob%'")])
-        (display "sending...")
+        (log-client-debug "sending...")
         (write-json (hash 'type "db" 'action "query" 'sql sql)
                     out)
-        (displayln "after write")
+        (log-client-debug "after write")
         (flush-output out)
-        (displayln "message sent.")
+        (log-client-debug "message sent.")
 
         (println (read-json in))
         (sleep 1))]
      [catch
          (any/c
           (begin
-            (displayln (~a  "boom!: " (~v e)))
+            (log-client-debug "boom!: ~v" e)
             (close-input-port in)
             (close-output-port out)))])
