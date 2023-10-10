@@ -48,6 +48,7 @@
       (let msg-loop ([msg-num 1])
         (displayln "waiting for message...")
         (try [(define msg (read-json in))
+              (log-server-debug "~a msg is: ~v" (thread-id) msg)
               (match msg
                 [(? eof-object?)  (close-connection in out)]
                 ["\n" (send-message "done" out)
@@ -131,7 +132,10 @@
      (parameterize ([current-database-handle (if config (dbh config) (dbh))])
        (define reply (apply func (append (list (dbh) sql) vals)))
        (match reply
-         [(? list?)              (map vector->list reply)]
+         [(? list?)
+          (for*/list ([row (map vector->list reply)]
+                      [val row])
+            (if (sql-null? val) "sql-null" val))]
          [(? void?)              reply]
          [result
           (raise-arguments-error 'dispatch
