@@ -9,7 +9,7 @@
 (define-values (in out) (tcp-connect "localhost" 20174))
 (displayln "connected.")
 
-(try [(for ([sql '("select * from test" "select data from test where data like 'bob%'")])
+(try [(for ([sql '("select * from calculations limit 1")])
         (log-client-debug "sending...")
         (write-json (hash 'type "db" 'action "query" 'sql sql)
                     out)
